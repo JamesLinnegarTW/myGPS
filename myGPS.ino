@@ -1,6 +1,9 @@
 #include <math.h>
+#include <Wire.h>
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
+#include "Adafruit_LEDBackpack.h"
+#include "Adafruit_GFX.h"
 
 #include "os_coord.h"
 #include "os_coord_math.h"
@@ -10,13 +13,21 @@
 SoftwareSerial mySerial(11, 10);
 Adafruit_GPS gps(&mySerial);
 uint32_t timer = millis();
+Adafruit_AlphaNum4 alpha4_a = Adafruit_AlphaNum4();
+Adafruit_AlphaNum4 alpha4_b = Adafruit_AlphaNum4();
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  alpha4_a.begin(0x70);  // pass in the address
+  alpha4_b.begin(0x71);  // pass in the address
+  alpha4_a.setBrightness(7);
+  alpha4_b.setBrightness(7);
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
+  renderString("OH HELLO");
+  delay(2000);
 }
 
 String formatNumber( float number ) {
@@ -55,23 +66,20 @@ String getGridRef( float latitude, float longitude){
   return formatGridRef(home_grid_ref);
 }
 
-double convertDegMinToDecDeg (float degMin) {
-  double min = 0.0;
-  double decDeg = 0.0;
- 
-  //get the minutes, fmod() requires double
-  min = fmod((double)degMin, 100.0);
- 
-  //rebuild coordinates in decimal degrees
-  degMin = (int) ( degMin / 100 );
-  decDeg = degMin + ( min / 60 );
- 
-  return decDeg;
+
+void renderString(String toDisplay){
+  for(int i=0; i<4; i++){
+    alpha4_a.writeDigitAscii(i, toDisplay.charAt(i));
+    alpha4_b.writeDigitAscii(i, toDisplay.charAt(i+4));
+  }
+  
+  alpha4_a.writeDisplay();
+  alpha4_b.writeDisplay();
+ Serial.println(toDisplay); 
 }
 
-
 void loop() {
-
+  char c = gps.read();
   if(gps.newNMEAreceived()){
     if(!gps.parse(gps.lastNMEA()))
       return;  
@@ -79,24 +87,11 @@ void loop() {
   if(millis() - timer > 2000) {
     timer = millis();
     if(gps.fix) {
-        Serial.println(getGridRef(convertDegMinToDecDeg(gps.latitude),
-                       convertDegMinToDecDeg(gps.longitude)));
+        renderString(getGridRef(gps.latitudeDegrees,
+                       gps.longitudeDegrees));
     } else {
-      Serial.println("Search..");
+      renderString("LOCATING");
     }
   }
-//  //TA 39684 10775
-//   float gps_latitude = 53.574977;
-//   float gps_longitude = 0.10814667;
-// 
-//     //   SK 03108 93611
-//    gps_latitude = 53.439263;
-//    gps_longitude = -1.9546840;
-//    
-//    //NY325 066
-//    gps_latitude = 54.450746;
-//    gps_longitude = -3.041759;
-    
-//  Serial.println(getGridRef(gps_latitude, gps_longitude));  
-//  delay(15000);
+
 }

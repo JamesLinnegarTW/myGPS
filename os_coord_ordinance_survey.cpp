@@ -78,34 +78,3 @@ os_eas_nor_to_grid_ref( os_eas_nor_t point
 	return grid_ref;
 }
 
-
-
-os_eas_nor_t
-os_grid_ref_to_eas_nor( os_grid_ref_t grid_ref
-                      , os_grid_t grid)
-{
-	// Get the grid-square positions
-	int sq_x = 0;
-	int sq_y = 0;
-	for (int i = 0; i < grid.num_digits; i++) {
-		// "Shift" up the previous digit
-		sq_x *= 5;
-		sq_y *= 5;
-		
-		// First digit may be offset in its grid
-		int off_x = (i == 0) ? I2X(C2I(grid.bottom_left_first_char)) : 0;
-		int off_y = (i == 0) ? I2Y(C2I(grid.bottom_left_first_char)) : 0;
-		
-		// Figure out the x/y for this digit
-		sq_x += I2X(C2I(grid_ref.code[i])) - off_x;
-		sq_y += I2Y(C2I(grid_ref.code[i])) - off_y;
-	}
-	
-	// Convert to raw eastings and northings
-	os_eas_nor_t point;
-	point.e = grid_ref.e + (100000.0 * (double)sq_x);
-	point.n = grid_ref.n + (100000.0 * (double)sq_y);
-	point.h = grid_ref.h;
-	
-	return point;
-}
