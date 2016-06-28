@@ -13,21 +13,31 @@
 SoftwareSerial mySerial(11, 10);
 Adafruit_GPS gps(&mySerial);
 uint32_t timer = millis();
+uint32_t last_render = millis();
+uint32_t display_time = 5000;
+uint32_t flash_time = 5000;
+uint32_t button_time = 10000;
+
+boolean render = false;
 Adafruit_AlphaNum4 alpha4_a = Adafruit_AlphaNum4();
 Adafruit_AlphaNum4 alpha4_b = Adafruit_AlphaNum4();
+int button_pin = 9;
+
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(button_pin, INPUT);
   alpha4_a.begin(0x70);  // pass in the address
   alpha4_b.begin(0x71);  // pass in the address
-  alpha4_a.setBrightness(7);
-  alpha4_b.setBrightness(7);
+  //alpha4_a.setBrightness(7);
+  //alpha4_b.setBrightness(7);
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
   renderString("OH HELLO");
   delay(2000);
+  clearDisplay();
 }
 
 String formatNumber( float number ) {
@@ -78,19 +88,47 @@ void renderString(String toDisplay){
  Serial.println(toDisplay); 
 }
 
+void clearDisplay(){
+  alpha4_a.clear();
+  alpha4_b.clear();
+  alpha4_a.writeDisplay();
+  alpha4_b.writeDisplay();
+}
+
 void loop() {
   char c = gps.read();
   if(gps.newNMEAreceived()){
     if(!gps.parse(gps.lastNMEA()))
       return;  
   }
-  if(millis() - timer > 2000) {
+  
+  if(digitalRead(button_pin)==HIGH){
+    last_render = millis()+ 20000;
+    display_time = button_time;
+  }
+  
+  if(millis() - last_render > 10000 && render == false) {
     timer = millis();
+    render = true;
+  }
+  
+  if(render){
     if(gps.fix) {
         renderString(getGridRef(gps.latitudeDegrees,
                        gps.longitudeDegrees));
     } else {
       renderString("LOCATING");
+    }
+    if(millis() - timer > display_time) {
+      last_render = millis();
+      timer = millis();
+      clearDisplay();
+      if(gps.fix){
+        display_time = flash_time;
+      } else {
+        display_time = 1000;
+      }
+      render = false;
     }
   }
 
