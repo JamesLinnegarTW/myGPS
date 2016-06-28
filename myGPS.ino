@@ -3,7 +3,6 @@
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
 #include "Adafruit_LEDBackpack.h"
-#include "Adafruit_GFX.h"
 
 #include "os_coord.h"
 #include "os_coord_math.h"
