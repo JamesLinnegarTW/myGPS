@@ -9,28 +9,36 @@
 #include "os_coord_data.h"
 #include "os_coord_transform.h"
 #include "os_coord_ordinance_survey.h"
+
 SoftwareSerial mySerial(11, 10);
 Adafruit_GPS gps(&mySerial);
-uint32_t timer = millis();
-uint32_t last_render = millis();
-uint32_t display_time = 5000;
-uint32_t flash_time = 5000;
-uint32_t button_time = 10000;
+long timer = millis();
+long last_render = millis();
+long display_time = 15000;
+long flash_time = 5000;
+long button_time = 20000;
+
+int buttonState;
+int lastButtonState = LOW;
+int buttonPressLength = 500;
+
+long lastDebounceTime = 0;  // the last time the output pin was toggled
+long debounceDelay = 50;    // the debounce time; increase if the output flickers
+long buttonPressTime = 0;
 
 boolean render = false;
 Adafruit_AlphaNum4 alpha4_a = Adafruit_AlphaNum4();
 Adafruit_AlphaNum4 alpha4_b = Adafruit_AlphaNum4();
 int button_pin = 9;
+int toDisplay = 0;
 
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
   pinMode(button_pin, INPUT);
   alpha4_a.begin(0x70);  // pass in the address
   alpha4_b.begin(0x71);  // pass in the address
-  //alpha4_a.setBrightness(7);
-  //alpha4_b.setBrightness(7);
+
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
@@ -39,12 +47,12 @@ void setup() {
   clearDisplay();
 }
 
-String formatNumber( float number ) {
+String formatNumber( float number , int chars) {
   String input = String(number);
   int i = input.lastIndexOf(".");
   String output = input.substring(0, i); 
 
-  for(int len = output.length(); len < 5; len++){
+  for(int len = output.length(); len < chars; len++){
     output = "0" + output;
   } 
   return output.substring(0,3);
@@ -52,8 +60,8 @@ String formatNumber( float number ) {
 
 String formatGridRef( os_grid_ref grid_ref){
   String output = grid_ref.code;
-  output += formatNumber(grid_ref.e);
-  output += formatNumber(grid_ref.n);
+  output += formatNumber(grid_ref.e, 5);
+  output += formatNumber(grid_ref.n, 5);
   return output;
 }
 
@@ -75,16 +83,19 @@ String getGridRef( float latitude, float longitude){
   return formatGridRef(home_grid_ref);
 }
 
-
 void renderString(String toDisplay){
+   
+  for(int len = toDisplay.length(); len < 8; len++){
+    toDisplay = toDisplay + " ";
+  }
+ 
   for(int i=0; i<4; i++){
     alpha4_a.writeDigitAscii(i, toDisplay.charAt(i));
     alpha4_b.writeDigitAscii(i, toDisplay.charAt(i+4));
   }
   
   alpha4_a.writeDisplay();
-  alpha4_b.writeDisplay();
- Serial.println(toDisplay); 
+  alpha4_b.writeDisplay(); 
 }
 
 void clearDisplay(){
@@ -94,16 +105,67 @@ void clearDisplay(){
   alpha4_b.writeDisplay();
 }
 
+void renderLocation(){
+  if(gps.fix) {
+        renderString(getGridRef(gps.latitudeDegrees,
+                       gps.longitudeDegrees));
+    } else {
+      renderString("LOCATING");
+    }
+}
+
+void renderAlt(){
+  renderString("ALT " + String((int) gps.altitude));
+}
+
+
 void loop() {
   char c = gps.read();
+  int reading = digitalRead(button_pin);
+  
+   if (reading != lastButtonState) {
+    // reset the debouncing timer
+    lastDebounceTime = millis();
+    buttonPressTime = millis();
+  }
+  
   if(gps.newNMEAreceived()){
     if(!gps.parse(gps.lastNMEA()))
       return;  
   }
   
-  if(digitalRead(button_pin)==HIGH){
-    last_render = millis()+ 20000;
-    display_time = button_time;
+
+  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+      
+      if(reading==HIGH){
+        if(render){
+          render = false;
+          timer = millis() + 60000;
+           
+           Serial.println("Turn off?");
+        } else {
+          last_render = millis()+ 20000;
+          display_time = button_time;
+        }
+      } 
+    } else {
+      if(reading==HIGH){
+         if((millis() - buttonPressTime) > 1000){
+            if(render == true){
+              toDisplay++;
+              
+              if(toDisplay > 3){
+                toDisplay = 0;
+              }
+            }
+            last_render = millis() + 20000;
+            buttonPressTime = millis();
+          } 
+      }
+    }
   }
   
   if(millis() - last_render > 10000 && render == false) {
@@ -112,12 +174,17 @@ void loop() {
   }
   
   if(render){
-    if(gps.fix) {
-        renderString(getGridRef(gps.latitudeDegrees,
-                       gps.longitudeDegrees));
-    } else {
-      renderString("LOCATING");
+    switch (toDisplay) {
+      case 0:
+        renderLocation();
+        break;
+      case 1:
+        renderAlt();
+        break;
+      default:
+         renderLocation();
     }
+    
     if(millis() - timer > display_time) {
       last_render = millis();
       timer = millis();
@@ -130,5 +197,6 @@ void loop() {
       render = false;
     }
   }
+    lastButtonState = reading;
 
 }
