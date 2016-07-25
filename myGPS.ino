@@ -1,4 +1,3 @@
-#include <math.h>
 #include <Wire.h>
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
@@ -12,33 +11,34 @@
 
 SoftwareSerial mySerial(11, 10);
 Adafruit_GPS gps(&mySerial);
+
 long timer = millis();
 long last_render = millis();
 long display_time = 15000;
 long flash_time = 5000;
 long button_time = 20000;
-
-int buttonState;
-int lastButtonState = LOW;
-int buttonPressLength = 500;
-
 long lastDebounceTime = 0;  // the last time the output pin was toggled
 long debounceDelay = 50;    // the debounce time; increase if the output flickers
 long buttonPressTime = 0;
 
-boolean render = false;
-Adafruit_AlphaNum4 alpha4_a = Adafruit_AlphaNum4();
-Adafruit_AlphaNum4 alpha4_b = Adafruit_AlphaNum4();
+
+int buttonState;
+int lastButtonState = LOW;
+int buttonPressLength = 500;
 int button_pin = 9;
 int toDisplay = 0;
 
+boolean render = false;
+
+Adafruit_AlphaNum4 alpha4_a = Adafruit_AlphaNum4();
+Adafruit_AlphaNum4 alpha4_b = Adafruit_AlphaNum4();
 
 void setup() {
   // put your setup code here, to run once:
   pinMode(button_pin, INPUT);
-  alpha4_a.begin(0x70);  // pass in the address
-  alpha4_b.begin(0x71);  // pass in the address
-
+  alpha4_a.begin(0x70);
+  alpha4_b.begin(0x71);
+  
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
@@ -49,8 +49,8 @@ void setup() {
 
 String formatNumber( float number , int chars) {
   String input = String(number);
-  int i = input.lastIndexOf(".");
-  String output = input.substring(0, i); 
+
+  String output = input.substring(0, input.lastIndexOf(".")); 
 
   for(int len = output.length(); len < chars; len++){
     output = "0" + output;
@@ -120,7 +120,7 @@ void renderAlt(){
 
 
 void loop() {
-  char c = gps.read();
+  gps.read();
   int reading = digitalRead(button_pin);
   
    if (reading != lastButtonState) {
@@ -130,12 +130,9 @@ void loop() {
   }
   
   if(gps.newNMEAreceived()){
-    if(!gps.parse(gps.lastNMEA()))
-      return;  
+    gps.parse(gps.lastNMEA());    
   }
-  
-
-  
+    
   if ((millis() - lastDebounceTime) > debounceDelay) {
     if (reading != buttonState) {
       buttonState = reading;
@@ -157,7 +154,7 @@ void loop() {
             if(render == true){
               toDisplay++;
               
-              if(toDisplay > 3){
+              if(toDisplay > 1){
                 toDisplay = 0;
               }
             }
@@ -197,6 +194,6 @@ void loop() {
       render = false;
     }
   }
-    lastButtonState = reading;
+  lastButtonState = reading;
 
 }

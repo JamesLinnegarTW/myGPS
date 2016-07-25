@@ -67,23 +67,6 @@ os_cartesian_to_lat_lon( os_cartesian_t point
 }
 
 
-os_helmert_t
-os_helmert_invert(os_helmert_t helmert)
-{
-	os_helmert_t new_helmert;
-	
-	new_helmert.tx = -helmert.tx;
-	new_helmert.ty = -helmert.ty;
-	new_helmert.tz = -helmert.tz;
-	
-	new_helmert.rx = -helmert.rx;
-	new_helmert.ry = -helmert.ry;
-	new_helmert.rz = -helmert.rz;
-	
-	new_helmert.s = -helmert.s;
-	
-	return new_helmert;
-}
 
 
 os_cartesian_t

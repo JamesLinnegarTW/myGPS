@@ -38,10 +38,7 @@ os_cartesian_t os_lat_lon_to_cartesian(os_lat_lon_t point, os_ellipsoid_t ellips
  */
 os_lat_lon_t os_cartesian_to_lat_lon(os_cartesian_t point, os_ellipsoid_t ellipsoid);
 
-/**
- * Transform a set of Helmert parameters to give the inverse transform.
- */
-os_helmert_t os_helmert_invert(os_helmert_t helmert);
+
 
 /**
  * Perform a Helmert transform on a point in cartesian space.
