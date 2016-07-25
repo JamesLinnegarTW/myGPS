@@ -20,7 +20,7 @@
 
 #include <Wire.h>
 
-#include "Adafruit_LEDBackpack.h"
+#include "LEDBackpack.h"
 
 #ifndef _BV
   #define _BV(bit) (1<<(bit))
@@ -124,14 +124,14 @@ static const uint16_t alphafonttable[] PROGMEM =  {
 0b0001010100000000, // Y
 0b0000110000001001  // Z
 };
-void Adafruit_LEDBackpack::setBrightness(uint8_t b) {
+void LEDBackpack::setBrightness(uint8_t b) {
   if (b > 15) b = 15;
   Wire.beginTransmission(i2c_addr);
   Wire.write(HT16K33_CMD_BRIGHTNESS | b);
   Wire.endTransmission();  
 }
 
-void Adafruit_LEDBackpack::blinkRate(uint8_t b) {
+void LEDBackpack::blinkRate(uint8_t b) {
   Wire.beginTransmission(i2c_addr);
   if (b > 3) b = 0; // turn off if not sure
   
@@ -139,10 +139,10 @@ void Adafruit_LEDBackpack::blinkRate(uint8_t b) {
   Wire.endTransmission();
 }
 
-Adafruit_LEDBackpack::Adafruit_LEDBackpack(void) {
+LEDBackpack::LEDBackpack(void) {
 }
 
-void Adafruit_LEDBackpack::begin(uint8_t _addr = 0x70) {
+void LEDBackpack::begin(uint8_t _addr = 0x70) {
   i2c_addr = _addr;
 
   Wire.begin();
@@ -155,7 +155,7 @@ void Adafruit_LEDBackpack::begin(uint8_t _addr = 0x70) {
   setBrightness(15); // max brightness
 }
 
-void Adafruit_LEDBackpack::writeDisplay(void) {
+void LEDBackpack::writeDisplay(void) {
   Wire.beginTransmission(i2c_addr);
   Wire.write((uint8_t)0x00); // start at address $00
 
@@ -166,7 +166,7 @@ void Adafruit_LEDBackpack::writeDisplay(void) {
   Wire.endTransmission();  
 }
 
-void Adafruit_LEDBackpack::clear(void) {
+void LEDBackpack::clear(void) {
   for (uint8_t i=0; i<8; i++) {
     displaybuffer[i] = 0;
   }
@@ -174,11 +174,11 @@ void Adafruit_LEDBackpack::clear(void) {
 
 /******************************* QUAD ALPHANUM OBJECT */
 
-Adafruit_AlphaNum4::Adafruit_AlphaNum4(void) {
+AlphaNum4::AlphaNum4(void) {
 
 }
 
-void Adafruit_AlphaNum4::writeDigitAscii(uint8_t n, uint8_t a,  boolean d) {
+void AlphaNum4::writeDigitAscii(uint8_t n, uint8_t a,  boolean d) {
   uint16_t font = pgm_read_word(alphafonttable+a);
 
   displaybuffer[n] = font;

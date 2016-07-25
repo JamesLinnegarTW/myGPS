@@ -1,5 +1,5 @@
-#ifndef Adafruit_LEDBackpack_h
-#define Adafruit_LEDBackpack_h
+#ifndef LEDBackpack_h
+#define LEDBackpack_h
 
 #if (ARDUINO >= 100)
  #include "Arduino.h"
@@ -21,9 +21,9 @@
 
 
 // this is the raw HT16K33 controller
-class Adafruit_LEDBackpack {
+class LEDBackpack {
  public:
-  Adafruit_LEDBackpack(void);
+  LEDBackpack(void);
   void begin(uint8_t _addr);
   void setBrightness(uint8_t b);
   void blinkRate(uint8_t b);
@@ -37,9 +37,9 @@ class Adafruit_LEDBackpack {
   uint8_t i2c_addr;
 };
 
-class Adafruit_AlphaNum4 : public Adafruit_LEDBackpack {
+class AlphaNum4 : public LEDBackpack {
  public:
-  Adafruit_AlphaNum4(void);
+  AlphaNum4(void);
   void writeDigitAscii(uint8_t n, uint8_t ascii, boolean dot = false);
 
  private:
@@ -47,5 +47,5 @@ class Adafruit_AlphaNum4 : public Adafruit_LEDBackpack {
 
 };
 
-#endif // Adafruit_LEDBackpack_h
+#endif // LEDBackpack_h
 

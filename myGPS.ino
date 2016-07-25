@@ -1,7 +1,7 @@
 #include <Wire.h>
-#include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
-#include "Adafruit_LEDBackpack.h"
+#include "GPS.h"
+#include "LEDBackpack.h"
 
 #include "os_coord.h"
 #include "os_coord_math.h"
@@ -10,7 +10,7 @@
 #include "os_coord_ordinance_survey.h"
 
 SoftwareSerial mySerial(11, 10);
-Adafruit_GPS gps(&mySerial);
+GPS gps(&mySerial);
 
 long timer = millis();
 long last_render = millis();
@@ -30,8 +30,8 @@ int toDisplay = 0;
 
 boolean render = false;
 
-Adafruit_AlphaNum4 alpha4_a = Adafruit_AlphaNum4();
-Adafruit_AlphaNum4 alpha4_b = Adafruit_AlphaNum4();
+AlphaNum4 alpha4_a = AlphaNum4();
+AlphaNum4 alpha4_b = AlphaNum4();
 
 void setup() {
   // put your setup code here, to run once:
