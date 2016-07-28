@@ -1,10 +1,15 @@
 #include "Button.h"
 #include "Arduino.h"
 
-Button::Button(int setup_pin){
+Button::Button(void){
+  
+}
+
+void Button::init(int setup_pin){
   pin = setup_pin; 
   debounce_delay = 50;     
-  pinMode(pin, INPUT);
+  pinMode(setup_pin, INPUT);
+  button_press_length = 1000;
 }
 
 void Button::tick(){
@@ -19,7 +24,7 @@ void Button::tick(){
     is_pressed = reading; // high or low
     
     if(reading==HIGH){
-       if((millis() - button_press_time) > 1000){
+       if((millis() - button_press_time) > button_press_length){
           is_held = 1;
           button_press_time = millis();
         } 

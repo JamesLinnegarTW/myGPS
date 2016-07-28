@@ -15,33 +15,23 @@ SoftwareSerial mySerial(11, 10);
 GPS gps(&mySerial);
 
 long timer = millis();
-long last_render = millis();
 long display_time = 15000;
-long flash_time = 5000;
 
-long button_time = 20000;
-long last_debounce_time = 0;  // the last time the output pin was toggled
-long debounce_delay = 50;    // the debounce time; increase if the output flickers
-long button_press_time = 0;
-
-
-int button_state;
-int last_button_state = LOW;
-int button_press_length = 500;
 int button_pin = 9;
 int to_display = 0;
 
 boolean render = false;
 Display screen = Display();
-Button display_button = Button(button_pin);
+Button display_button = Button();
 
 
 void setup() {
-  // put your setup code here, to run once:
-  pinMode(button_pin, INPUT);
+  screen.init();
+  display_button.init(button_pin);
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
+ 
   screen.renderString("Oh Hello");
   delay(2000);
   screen.clear();
@@ -106,11 +96,13 @@ void loop() {
   display_button.tick();
 
   if(display_button.is_pressed){
-    display_time = millis() + 20000; // length of time to display
+    timer = millis(); // length of time to display
     render = true;
   }
   
   if(display_button.is_held) {
+    timer = millis();
+    render = true;
     to_display++;
     
     if(to_display > 1){
@@ -118,7 +110,7 @@ void loop() {
     }
   }
   
- 
+
   if(render){
     switch (to_display) {
       case 0:
@@ -132,7 +124,6 @@ void loop() {
     }
     
     if(millis() - timer > display_time) {
-      last_render = millis();
       timer = millis();
       screen.clear();
       render = false;

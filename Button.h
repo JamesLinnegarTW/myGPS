@@ -2,10 +2,12 @@
 
 class Button {
  public:
-  Button(int setup_pin);
+  Button(void);
+  void init(int setup_pin);
   void tick();
   boolean is_pressed;
   boolean is_held;
+  
  protected:
    int pin;
    long last_debounce_time;  // the last time the output pin was toggled
