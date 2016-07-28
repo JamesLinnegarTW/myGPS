@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include "Display.h"
+#include "Button.h"
 #include "GPS.h"
 #include "LEDBackpack.h"
 
@@ -17,6 +18,7 @@ long timer = millis();
 long last_render = millis();
 long display_time = 15000;
 long flash_time = 5000;
+
 long button_time = 20000;
 long last_debounce_time = 0;  // the last time the output pin was toggled
 long debounce_delay = 50;    // the debounce time; increase if the output flickers
@@ -31,6 +33,7 @@ int to_display = 0;
 
 boolean render = false;
 Display screen = Display();
+Button display_button = Button(button_pin);
 
 
 void setup() {
@@ -96,18 +99,21 @@ void renderAlt(){
 
 void loop() {
   gps.read();
-  int reading = digitalRead(button_pin);
   
-   if (reading != last_button_state) {
+  if(gps.newNMEAreceived()){
+    gps.parse(gps.lastNMEA());    
+  }
+  display_button.tick();
+  /*  
+  int reading = digitalRead(button_pin);
+
+  if (reading != last_button_state) {
     // reset the debouncing timer
     last_debounce_time = millis();
     button_press_time = millis();
   }
   
-  if(gps.newNMEAreceived()){
-    gps.parse(gps.lastNMEA());    
-  }
-    
+
   if ((millis() - last_debounce_time) > debounce_delay) {
     if (reading != button_state) {
       button_state = reading;
@@ -117,7 +123,6 @@ void loop() {
           render = false;
           timer = millis() + 60000;
            
-           Serial.println("Turn off?");
         } else {
           last_render = millis()+ 20000;
           display_time = button_time;
@@ -139,11 +144,26 @@ void loop() {
       }
     }
   }
-  
   if(millis() - last_render > 10000 && render == false) {
     timer = millis();
     render = true;
   }
+  */
+  
+  if(display_button.is_pressed){
+    display_time = millis() + 20000;
+    render = true;
+  }
+  
+  if(display_button.is_held) {
+    to_display++;
+    
+    if(to_display > 1){
+      to_display = 0;
+    }
+  }
+  
+
   
   if(render){
     switch (to_display) {
@@ -169,6 +189,6 @@ void loop() {
       render = false;
     }
   }
-  last_button_state = reading;
+  //last_button_state = reading;
 
 }
