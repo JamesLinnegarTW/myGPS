@@ -104,54 +104,9 @@ void loop() {
     gps.parse(gps.lastNMEA());    
   }
   display_button.tick();
-  /*  
-  int reading = digitalRead(button_pin);
 
-  if (reading != last_button_state) {
-    // reset the debouncing timer
-    last_debounce_time = millis();
-    button_press_time = millis();
-  }
-  
-
-  if ((millis() - last_debounce_time) > debounce_delay) {
-    if (reading != button_state) {
-      button_state = reading;
-      
-      if(reading==HIGH){
-        if(render){
-          render = false;
-          timer = millis() + 60000;
-           
-        } else {
-          last_render = millis()+ 20000;
-          display_time = button_time;
-        }
-      } 
-    } else {
-      if(reading==HIGH){
-         if((millis() - button_press_time) > 1000){
-            if(render == true){
-              to_display++;
-              
-              if(to_display > 1){
-                to_display = 0;
-              }
-            }
-            last_render = millis() + 20000;
-            button_press_time = millis();
-          } 
-      }
-    }
-  }
-  if(millis() - last_render > 10000 && render == false) {
-    timer = millis();
-    render = true;
-  }
-  */
-  
   if(display_button.is_pressed){
-    display_time = millis() + 20000;
+    display_time = millis() + 20000; // length of time to display
     render = true;
   }
   
@@ -181,11 +136,6 @@ void loop() {
       last_render = millis();
       timer = millis();
       screen.clear();
-      if(gps.fix){
-        display_time = flash_time;
-      } else {
-        display_time = 1000;
-      }
       render = false;
     }
   }
