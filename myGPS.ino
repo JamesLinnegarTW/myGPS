@@ -118,8 +118,7 @@ void loop() {
     }
   }
   
-
-  
+ 
   if(render){
     switch (to_display) {
       case 0:
@@ -139,6 +138,6 @@ void loop() {
       render = false;
     }
   }
-  //last_button_state = reading;
+
 
 }
