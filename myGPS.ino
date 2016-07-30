@@ -16,6 +16,7 @@ GPS gps(&mySerial);
 
 long timer = millis();
 long display_time = 15000;
+long update_display_time;
 
 int button_pin = 9;
 int to_display = 0;
@@ -32,7 +33,7 @@ void setup() {
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
  
-  screen.renderString("Oh Hello");
+  screen.renderString("MY GPS");
   delay(2000);
   screen.clear();
 }
@@ -98,11 +99,12 @@ void loop() {
   if(display_button.is_pressed){
     timer = millis(); // length of time to display
     render = true;
+  } else {
+    update_display_time = millis();
   }
   
-  if(display_button.is_held) {
-    timer = millis();
-    render = true;
+  if(display_button.is_pressed && (millis() - update_display_time) > 1000) {
+    update_display_time = millis();
     to_display++;
     
     if(to_display > 1){
@@ -124,7 +126,6 @@ void loop() {
     }
     
     if(millis() - timer > display_time) {
-      timer = millis();
       screen.clear();
       render = false;
     }
