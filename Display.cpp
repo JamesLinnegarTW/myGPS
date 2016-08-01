@@ -15,11 +15,11 @@ void Display::init(){
 }
 
 void Display::renderString(String to_display) {
-  for(int len = to_display.length(); len < 8; len++){
+  for(byte len = to_display.length(); len < 8; len++){
     to_display = to_display + " ";
   }
  
-  for(int i=0; i<4; i++){
+  for(byte i=0; i<4; i++){
     alpha4_a.writeDigitAscii(i, to_display.charAt(i));
     alpha4_b.writeDigitAscii(i, to_display.charAt(i+4));
   }

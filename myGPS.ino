@@ -1,5 +1,27 @@
+/**
+ * Wiring Pins
+ * 
+ * Display
+ *  SCL Analog #5 
+ *  SDA Digital #2
+ *   
+ * GPS Software serial
+ *  14, 15
+ *  
+ * SD Card
+ *  Connect CLK to pin 13
+ *  Connect DO to pin 12
+ *  Connect DI to pin 11
+ *  Connect CS to pin 10
+ * 
+ */
+ 
+
 #include <Wire.h>
 #include <SoftwareSerial.h>
+#include <SPI.h>
+#include <SD.h>
+
 #include "Display.h"
 #include "Button.h"
 #include "GPS.h"
@@ -11,15 +33,17 @@
 #include "os_coord_transform.h"
 #include "os_coord_ordinance_survey.h"
 
+const byte chipSelect = 10;
+const byte button_pin = 9;
+const long display_time = 10000;
+
 SoftwareSerial mySerial(11, 10);
 GPS gps(&mySerial);
 
 long timer = millis();
-long display_time = 10000;
 long update_display_time;
 long last_render;
 
-byte button_pin = 9;
 byte to_display = 0;
 
 boolean render = false;
@@ -34,8 +58,13 @@ void setup() {
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
- 
-  screen.renderString(" MY GPS");
+
+
+  if (!SD.begin(chipSelect)) {
+    return;
+  }
+  
+  screen.renderString(F(" MYGPS"));
   delay(2000);
   screen.clear();
 }
@@ -81,7 +110,7 @@ void renderLocation(){
         screen.renderString(getGridRef(gps.latitudeDegrees,
                        gps.longitudeDegrees));
     } else {
-      screen.renderString("LOCATING");
+      screen.renderString(F("LOCATING"));
     }
 }
 
@@ -89,10 +118,22 @@ void renderAlt(){
   screen.renderString("ALT " + String((int) gps.altitude));
 }
 
-void renderSatellites(){
-  screen.renderString("SAT "+ String(gps.satellites));
-}
+void writeToFile(String dataString){
 
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  File dataFile = SD.open(F("data.txt"), FILE_WRITE);
+
+  // if the file is available, write to it:
+  if (dataFile) {
+    dataFile.println(dataString);
+    dataFile.close();
+  }
+  // if the file isn't open, pop up an error:
+  else {
+   
+  }
+}
 void loop() {
   gps.read();
   
@@ -112,7 +153,7 @@ void loop() {
     update_display_time = millis();
     to_display++;
     
-    if(to_display > 2){
+    if(to_display > 1){
       to_display = 0;
     }
   }
@@ -125,9 +166,6 @@ void loop() {
       case 1:
         renderAlt();
         break;
-      case 2:
-        renderSatellites();
-        break;
       default:
          renderLocation();
     } 
@@ -136,6 +174,7 @@ void loop() {
       screen.clear();
       to_display = 0;
       render = false;
+      writeToFile(gps.lastNMEA());
     }
   }
 

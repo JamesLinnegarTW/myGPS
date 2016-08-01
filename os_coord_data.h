@@ -73,14 +73,6 @@ const os_tm_projection_t OS_TM_NATIONAL_GRID = {
 	.ellipsoid={.a=6377563.396, .b=6356256.910} // Airy 1830
 };
 
-// Ordenance Survey Irish National Grid
-const os_tm_projection_t OS_TM_IRISH_NATIONAL_GRID = {
-	.e0=200000.0, .n0=250000.0,
-	.f0=1.000035,
-	.lat0=53.5, .lon0=-8.0,
-	.ellipsoid={.a=6377340.189, .b=6356034.447} // Airy 1830 Modified
-};
-
 // Universal Transverse Mercator (UTM) Zone 29
 const os_tm_projection_t OS_TM_UTM_ZOME_29 = {
 	.e0=500000.0, .n0=0.0,
@@ -116,14 +108,6 @@ const os_grid_t OS_GR_NATIONAL_GRID = {
 	.bottom_left_first_char='S',
 	.width=7,
 	.height=13
-};
-
-// Ordinance Survey National Grid over Ireland and Northern Ireland
-const os_grid_t OS_GR_IRISH_NATIONAL_GRID = {
-	.num_digits=1,
-	.bottom_left_first_char='V',
-	.width=5,
-	.height=5
 };
 
 #endif

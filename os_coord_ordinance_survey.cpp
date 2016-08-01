@@ -6,7 +6,6 @@
  * from http://www.movable-type.co.uk/scripts/latlong-gridref.html.
  */
 
-#include <stdio.h>
 #include <math.h>
 
 #include "os_coord.h"

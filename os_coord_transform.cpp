@@ -8,7 +8,6 @@
  * systems in Great Britain", Section 6.
  */
 
-#include <stdio.h>
 #include <math.h>
 
 #include "os_coord.h"
