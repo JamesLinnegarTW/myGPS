@@ -19,8 +19,8 @@ long display_time = 10000;
 long update_display_time;
 long last_render;
 
-int button_pin = 9;
-int to_display = 0;
+byte button_pin = 9;
+byte to_display = 0;
 
 boolean render = false;
 Display screen = Display();
@@ -40,12 +40,12 @@ void setup() {
   screen.clear();
 }
 
-String formatNumber( float number , int chars) {
+String formatNumber( float number , byte chars) {
   String input = String(number);
 
   String output = input.substring(0, input.lastIndexOf(".")); 
 
-  for(int len = output.length(); len < chars; len++){
+  for(byte len = output.length(); len < chars; len++){
     output = "0" + output;
   } 
   return output.substring(0,3);

@@ -5,7 +5,7 @@ Button::Button(void){
   
 }
 
-void Button::init(int setup_pin){
+void Button::init(byte setup_pin){
   pin = setup_pin; 
   debounce_delay = 50;     
   pinMode(setup_pin, INPUT);
