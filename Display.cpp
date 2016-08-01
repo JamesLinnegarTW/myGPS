@@ -9,6 +9,9 @@ Display::Display(void) {
 void Display::init(){
   alpha4_a.begin(0x70);
   alpha4_b.begin(0x71);
+  
+  alpha4_a.setBrightness(15);
+  alpha4_b.setBrightness(15);  
 }
 
 void Display::renderString(String to_display) {

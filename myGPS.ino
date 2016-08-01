@@ -15,8 +15,9 @@ SoftwareSerial mySerial(11, 10);
 GPS gps(&mySerial);
 
 long timer = millis();
-long display_time = 15000;
+long display_time = 10000;
 long update_display_time;
+long last_render;
 
 int button_pin = 9;
 int to_display = 0;
@@ -29,11 +30,12 @@ Button display_button = Button();
 void setup() {
   screen.init();
   display_button.init(button_pin);
+  
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
  
-  screen.renderString("MY GPS");
+  screen.renderString(" MY GPS");
   delay(2000);
   screen.clear();
 }
@@ -87,6 +89,9 @@ void renderAlt(){
   screen.renderString("ALT " + String((int) gps.altitude));
 }
 
+void renderSatellites(){
+  screen.renderString("SAT "+ String(gps.satellites));
+}
 
 void loop() {
   gps.read();
@@ -107,12 +112,11 @@ void loop() {
     update_display_time = millis();
     to_display++;
     
-    if(to_display > 1){
+    if(to_display > 2){
       to_display = 0;
     }
   }
   
-
   if(render){
     switch (to_display) {
       case 0:
@@ -121,12 +125,16 @@ void loop() {
       case 1:
         renderAlt();
         break;
+      case 2:
+        renderSatellites();
+        break;
       default:
          renderLocation();
-    }
+    } 
     
     if(millis() - timer > display_time) {
       screen.clear();
+      to_display = 0;
       render = false;
     }
   }
