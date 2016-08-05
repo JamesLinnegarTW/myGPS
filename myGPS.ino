@@ -19,8 +19,6 @@
 
 #include <Wire.h>
 #include <SoftwareSerial.h>
-#include <SPI.h>
-#include <SD.h>
 
 #include "Display.h"
 #include "Button.h"
@@ -59,11 +57,6 @@ void setup() {
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
 
-
-  if (!SD.begin(chipSelect)) {
-    return;
-  }
-  
   screen.renderString(F(" MYGPS"));
   delay(2000);
   screen.clear();
@@ -118,22 +111,7 @@ void renderAlt(){
   screen.renderString("ALT " + String((int) gps.altitude));
 }
 
-void writeToFile(String dataString){
 
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  File dataFile = SD.open(F("data.txt"), FILE_WRITE);
-
-  // if the file is available, write to it:
-  if (dataFile) {
-    dataFile.println(dataString);
-    dataFile.close();
-  }
-  // if the file isn't open, pop up an error:
-  else {
-   
-  }
-}
 void loop() {
   gps.read();
   
@@ -174,7 +152,6 @@ void loop() {
       screen.clear();
       to_display = 0;
       render = false;
-      writeToFile(gps.lastNMEA());
     }
   }
 
