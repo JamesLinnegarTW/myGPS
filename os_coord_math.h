@@ -10,6 +10,5 @@
 
 #define PI             3.141592653589793
 #define DEG_2_RAD(deg) (((deg)/180) * PI)
-#define RAD_2_DEG(rad) (((rad)/PI) * 180)
 
 #endif

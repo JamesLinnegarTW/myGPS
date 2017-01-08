@@ -19,13 +19,6 @@
  */
 #define OS_CART_TO_LAT_LON_PRECISION 4.0
 
-/**
- * Conversion from cartesian to eastings and northings on a TM projection to
- * lat-lon is done via an iterative algorithm. This constant defines maximum
- * value that (N - N_0 - M) may hold (m). The value 0.1mm is suggested by "A
- * guide to coordinate systems in Great Britain".
- */
-#define OS_EAS_NOR_TO_LAT_LON_PRECISION 0.00001
 
 /**
  * Convert a lat/lon/eh point on an ellipsoid to the corresponding point in 3D
@@ -50,11 +43,5 @@ os_cartesian_t os_helmert_transform(os_cartesian_t point, os_helmert_t helmert);
  * mercator projection. Ellipsoidal height is copied verbatim.
  */
 os_eas_nor_t os_lat_lon_to_tm_eas_nor(os_lat_lon_t point, os_tm_projection_t projection);
-
-/**
- * Transform a set of eastings and northings into lat/lon/eh from a transverse
- * mercator projection. Height is copied verbatim.
- */
-os_lat_lon_t os_tm_eas_nor_to_lat_lon(os_eas_nor_t point, os_tm_projection_t projection);
 
 #endif

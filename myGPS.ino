@@ -2,56 +2,44 @@
  * Wiring Pins
  * 
  * Display
- *  SCL Analog #5 
- *  SDA Digital #2
+ *  SCL Analog B0
+ *  SDA Digital B1
  *   
  * GPS Software serial
- *  14, 15
+ *  11, 10 B7, B6
  *  
- * SD Card
- *  Connect CLK to pin 13
- *  Connect DO to pin 12
- *  Connect DI to pin 11
- *  Connect CS to pin 10
- * 
  */
  
-
 #include <Wire.h>
-#include <SoftwareSerial.h>
-
+//#include <SoftwareSerial.h>
+#include <Adafruit_GPS.h>
 #include "Display.h"
 #include "Button.h"
-#include "GPS.h"
-#include "LEDBackpack.h"
+#include "GridReference.h"
 
-#include "os_coord.h"
-#include "os_coord_math.h"
-#include "os_coord_data.h"
-#include "os_coord_transform.h"
-#include "os_coord_ordinance_survey.h"
+const byte    DISPLAY_BUTTON_PIN = 2;
+const long    DISPLAY_TIME = 5000;
+const int     REFRESH_INTERVAL = 250;
+const long    AUTO_RENDER_INTERVAL = 300000;
 
-const byte chipSelect = 10;
-const byte button_pin = 9;
-const long display_time = 10000;
+SoftwareSerial gpsSerial(11, 10);
+Adafruit_GPS   gps(&gpsSerial);
 
-SoftwareSerial mySerial(11, 10);
-GPS gps(&mySerial);
+unsigned long timeAtLastRender;
+unsigned long timeAtLastRefresh;
 
-long timer = millis();
-long update_display_time;
-long last_render;
-
-byte to_display = 0;
-
+byte toDisplay = 0;
 boolean render = false;
-Display screen = Display();
-Button display_button = Button();
 
+Display screen = Display();
+Button displayButton = Button();
+
+GridReference gridReference = GridReference();
 
 void setup() {
+  Serial.begin(9600);
   screen.init();
-  display_button.init(button_pin);
+  displayButton.init(DISPLAY_BUTTON_PIN);
   
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -60,48 +48,62 @@ void setup() {
   screen.renderString(F(" MYGPS"));
   delay(2000);
   screen.clear();
+    pinMode(13, OUTPUT);
 }
 
-String formatNumber( float number , byte chars) {
-  String input = String(number);
-
-  String output = input.substring(0, input.lastIndexOf(".")); 
-
-  for(byte len = output.length(); len < chars; len++){
-    output = "0" + output;
-  } 
-  return output.substring(0,3);
-}
-
-String formatGridRef( os_grid_ref grid_ref){
-  String output = grid_ref.code;
-  output += formatNumber(grid_ref.e, 5);
-  output += formatNumber(grid_ref.n, 5);
-  return output;
-}
-
-String getGridRef( float latitude, float longitude){
-
-   float gps_ellipsoidal_height = 1.0;
-   
-   os_lat_lon_t   home_ll_wgs84 = { .lat=DEG_2_RAD(latitude)
-	                         , .lon=DEG_2_RAD(longitude)
-	                         , .eh=gps_ellipsoidal_height
-	                         };
-	
-  os_cartesian_t home_c_wgs84 = os_lat_lon_to_cartesian(home_ll_wgs84, OS_EL_WGS84);
-  os_cartesian_t home_c_airy30 = os_helmert_transform(home_c_wgs84, OS_HE_WGS84_TO_OSGB36);
-  os_lat_lon_t home_ll_airy30 = os_cartesian_to_lat_lon(home_c_airy30, OS_EL_AIRY_1830);
-  os_eas_nor_t home_en_airy30 = os_lat_lon_to_tm_eas_nor(home_ll_airy30, OS_TM_NATIONAL_GRID);
-  os_grid_ref_t home_grid_ref = os_eas_nor_to_grid_ref(home_en_airy30, OS_GR_NATIONAL_GRID);
+void loop() {
+  unsigned long now = millis();
   
-  return formatGridRef(home_grid_ref);
+  gps.read();
+  displayButton.tick();
+
+
+  if(gps.newNMEAreceived()){
+    gps.parse(gps.lastNMEA());    
+  }
+  
+  if(displayButton.isPressed()){
+    render = true;
+    timeAtLastRender = now;
+  }
+  
+  if(displayButton.isHeld()) { 
+    toDisplay++;
+    if(toDisplay > 1){
+      toDisplay = 0;
+    }
+  }
+
+  if(now - timeAtLastRender> DISPLAY_TIME) { // reset the screen and turn it off
+    render = false;
+  }
+  
+  if((now - timeAtLastRefresh) > REFRESH_INTERVAL){
+    if(render){ // only render the screen every n milliseconds
+      switch (toDisplay) {
+        case 0:
+          renderLocation();
+          break;
+        case 1:
+          renderAlt();
+          break;
+        default:
+           renderLocation();
+      } 
+    } else {
+      screen.clear();
+    }
+   
+    timeAtLastRefresh = now;   
+   
+  }
+  
+  
 }
 
 void renderLocation(){
   if(gps.fix) {
-        screen.renderString(getGridRef(gps.latitudeDegrees,
-                       gps.longitudeDegrees));
+      screen.renderString(gridReference.calculate(gps.latitudeDegrees, gps.longitudeDegrees));
     } else {
       screen.renderString(F("LOCATING"));
     }
@@ -112,48 +114,5 @@ void renderAlt(){
 }
 
 
-void loop() {
-  gps.read();
-  
-  if(gps.newNMEAreceived()){
-    gps.parse(gps.lastNMEA());    
-  }
-  display_button.tick();
-
-  if(display_button.is_pressed){
-    timer = millis(); // length of time to display
-    render = true;
-  } else {
-    update_display_time = millis();
-  }
-  
-  if(display_button.is_pressed && (millis() - update_display_time) > 1000) {
-    update_display_time = millis();
-    to_display++;
-    
-    if(to_display > 1){
-      to_display = 0;
-    }
-  }
-  
-  if(render){
-    switch (to_display) {
-      case 0:
-        renderLocation();
-        break;
-      case 1:
-        renderAlt();
-        break;
-      default:
-         renderLocation();
-    } 
-    
-    if(millis() - timer > display_time) {
-      screen.clear();
-      to_display = 0;
-      render = false;
-    }
-  }
 
 
-}
