@@ -3,10 +3,10 @@
 
 Button::Button(void){}
 
-void Button::init(byte setup_pin){
+void Button::init(byte setup_pin, unsigned int _hold_delay){
   pin = setup_pin; 
   debounce_delay = 50;     
-  hold_delay = 1000;
+  hold_delay = _hold_delay;
 
   is_pressed = false;
   is_held = false;
@@ -47,9 +47,5 @@ boolean Button::isPressed(){
 
 boolean Button::isHeld() {
   return is_held;
-}
-
-unsigned long Button::lastPressedTime() {
-  return last_pressed_time;
 }
 

@@ -11,16 +11,17 @@
  */
  
 #include <Wire.h>
-//#include <SoftwareSerial.h>
+#include <SoftwareSerial.h>
 #include <Adafruit_GPS.h>
 #include "Display.h"
 #include "Button.h"
 #include "GridReference.h"
 
-const byte    DISPLAY_BUTTON_PIN = 2;
-const long    DISPLAY_TIME = 5000;
-const int     REFRESH_INTERVAL = 250;
-const long    AUTO_RENDER_INTERVAL = 300000;
+const byte         DISPLAY_BUTTON_PIN = 2;
+const long         DISPLAY_TIME = 5000;
+const int          REFRESH_INTERVAL = 250;
+const long         AUTO_RENDER_INTERVAL = 300000;
+const unsigned int DISPLAY_BUTTON_HOLD_TIME = 1000;
 
 SoftwareSerial gpsSerial(11, 10);
 Adafruit_GPS   gps(&gpsSerial);
@@ -39,7 +40,7 @@ GridReference gridReference = GridReference();
 void setup() {
   Serial.begin(9600);
   screen.init();
-  displayButton.init(DISPLAY_BUTTON_PIN);
+  displayButton.init(DISPLAY_BUTTON_PIN, DISPLAY_BUTTON_HOLD_TIME);
   
   gps.begin(9600);
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -74,8 +75,13 @@ void loop() {
     }
   }
 
-  if(now - timeAtLastRender> DISPLAY_TIME) { // reset the screen and turn it off
+  if(now - timeAtLastRender > DISPLAY_TIME) { // reset the screen and turn it off
     render = false;
+  }
+
+
+  if((render == false) && (now - timeAtLastRender) > AUTO_RENDER_INTERVAL){
+    render = true;
   }
   
   if((now - timeAtLastRefresh) > REFRESH_INTERVAL){
@@ -90,6 +96,8 @@ void loop() {
         default:
            renderLocation();
       } 
+
+      timeAtLastRender = now;
     } else {
       screen.clear();
     }
@@ -112,6 +120,7 @@ void renderLocation(){
 void renderAlt(){
   screen.renderString("ALT " + String((int) gps.altitude));
 }
+
 
 
 

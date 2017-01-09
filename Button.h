@@ -6,12 +6,11 @@
 class Button {
  public:
   Button(void);
-  void init(byte setup_pin);
+  void init(byte setup_pin, unsigned int _hold_delay);
   void tick();
   boolean isPressed();
   boolean isHeld();
-  unsigned long lastPressedTime();
-  
+
  private:
    int pin;
 
@@ -24,8 +23,6 @@ class Button {
    
    unsigned long last_debounce_time;  // the last time the output pin was toggled
    unsigned long last_pressed_time;
-
-
    
 };
 #endif
