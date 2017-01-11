@@ -13,7 +13,7 @@ GridReference::GridReference(void){
 
 
 String GridReference::calculate( float latitude, float longitude){
-
+    
    float gps_ellipsoidal_height = 1.0;
    
    os_lat_lon_t   home_ll_wgs84 = { .lat=DEG_2_RAD(latitude)
@@ -26,10 +26,26 @@ String GridReference::calculate( float latitude, float longitude){
   os_lat_lon_t home_ll_airy30 = os_cartesian_to_lat_lon(home_c_airy30, OS_EL_AIRY_1830);
   os_eas_nor_t home_en_airy30 = os_lat_lon_to_tm_eas_nor(home_ll_airy30, OS_TM_NATIONAL_GRID);
   os_grid_ref_t home_grid_ref = os_eas_nor_to_grid_ref(home_en_airy30, OS_GR_NATIONAL_GRID);
-  
+
   return format(home_grid_ref);
 }
 
+
+String GridReference::getCurrentGridReference(){
+   return format(currentGridReference);
+}
+
+/*
+void GridReference::toCharArray(double value, char * output){
+  char buffer[50];
+  char *p;
+  
+  dtostrf(value,7, 2, buffer);
+  p = strtok(buffer,".");
+  
+  Serial.println(buffer);
+}
+*/
 String  GridReference::formatNumber( float number , byte chars) {
   String input = String(number);
 
@@ -47,3 +63,4 @@ String  GridReference::format( os_grid_ref grid_ref){
   output += formatNumber(grid_ref.n, 5);
   return output;
 }
+

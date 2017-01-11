@@ -12,9 +12,11 @@ class GridReference {
  public:
   GridReference(void);
   String calculate(float latitude, float longitude);
+  String getCurrentGridReference();
 
  private:
    String formatNumber(float number , byte chars);
    String format( os_grid_ref grid_ref );
+   os_grid_ref currentGridReference;
 };
 #endif
