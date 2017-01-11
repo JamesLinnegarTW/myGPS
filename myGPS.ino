@@ -13,26 +13,28 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 
-
 #include <Adafruit_GPS.h>
 #include "Display.h"
 #include "Button.h"
-#include "GridReference.h"
+#include "GridReferenceCalculator.h"
 
-const byte         DISPLAY_BUTTON_PIN = 2;
-const long         DISPLAY_TIME = 10000;
-const int          REFRESH_INTERVAL = 250;
-const long         AUTO_RENDER_INTERVAL = 200000;
-const unsigned int DISPLAY_BUTTON_HOLD_TIME = 1000;
+const byte  DISPLAY_BUTTON_PIN = 2;
+const long  DISPLAY_TIME = 10000;
+const int   REFRESH_INTERVAL = 2000;
+const long  AUTO_RENDER_INTERVAL = 100000;
+const int   DISPLAY_BUTTON_HOLD_TIME = 1000;
+const unsigned int CALCULATE_INTERVAL = 5000;
 
-const double MOCK_LAT = 53.4362297;
-const double MOCK_LON = -1.9546493;
+
+const double MOCK_LAT = 60.640876;
+const double MOCK_LON = -1.0986328;
 
 SoftwareSerial gpsSerial(11, 10);
 Adafruit_GPS   gps(&gpsSerial);
 
 unsigned long timeAtLastRender;
 unsigned long timeAtLastRefresh;
+unsigned long timeAtLastCalculation;
 
 byte toDisplay = 0;
 boolean render = false;
@@ -41,10 +43,10 @@ boolean alwaysOn = false;
 Display screen = Display();
 Button displayButton = Button();
 
-GridReference gridReference = GridReference();
+GridReferenceCalculator calculator = GridReferenceCalculator();
 
 void setup() {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   screen.init();
   displayButton.init(DISPLAY_BUTTON_PIN, DISPLAY_BUTTON_HOLD_TIME);
   
@@ -69,15 +71,20 @@ void loop() {
   }
   
   if(displayButton.isHeld()) { 
-    alwaysOn = !alwaysOn;
+   // alwaysOn = !alwaysOn;
 
-    /*toDisplay++;
+    toDisplay++;
     if(toDisplay > 1){
       toDisplay = 0;
     }
-    */
+    
   }
-
+  
+  if(gps.fix && (now  - timeAtLastCalculation > CALCULATE_INTERVAL)){
+    calculator.calculate(gps.latitudeDegrees, gps.longitudeDegrees);
+    timeAtLastCalculation = now;
+  }
+  
   if(now - timeAtLastRender > DISPLAY_TIME) { // reset the screen and turn it off
     render = false;
   }
@@ -88,7 +95,7 @@ void loop() {
     timeAtLastRender = now;
   }
     
-  if((now - timeAtLastRefresh) > REFRESH_INTERVAL){
+  if((now - timeAtLastRefresh) > REFRESH_INTERVAL || displayButton.isPressed()){
    
     if(render || alwaysOn){ // only render the screen every n milliseconds
       renderLocation();
@@ -121,20 +128,17 @@ void loop() {
 }
 
 void renderLocation(){
-  if(gps.fix){
-    screen.renderString(gridReference.calculate(gps.latitudeDegrees, gps.longitudeDegrees));
-  } else {
-    screen.renderString(F("LOCATING"));
-  }
+  char toDisplay[9];
+  calculator.getCurrentGridReference(toDisplay);
+  screen.renderCharArray(toDisplay);
 }
-
+/*
 void renderAlt(){
-  //char toDisplay[8] = "ALT 1234";
-  //screen.renderCharArray(toDisplay);
-  screen.renderString("ALT " + String((int) gps.altitude));
+  char toDisplay[8] = "ALT 1234";
+  screen.renderCharArray(toDisplay);
+  //screen.renderString("ALT " + String((int) gps.altitude));
 }
-
-
+*/
 
 
 

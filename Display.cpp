@@ -14,33 +14,8 @@ void Display::init(){
   a5_8.setBrightness(15);  
 }
 
-void Display::renderString(String to_display) {
- // Serial.println(to_display);
-  
-  a1_4.clear();
-  a5_8.clear();
-  
-  for(byte i=0; i<4; i++){
-    if(to_display.charAt(i)){
-      a1_4.writeDigitAscii(i, to_display.charAt(i));
-    } else {
-      a1_4.writeDigitAscii(i, " ");
-    }
-    if(to_display.charAt(i)){
-      a5_8.writeDigitAscii(i, to_display.charAt(i+4));
-    } else {
-      a5_8.writeDigitAscii(i, " ");
-    }
-   
-  }
-  
-  a1_4.writeDisplay();
-  a5_8.writeDisplay(); 
-
-}
-
 void Display::renderCharArray(char * to_display) {
- // Serial.println(to_display);
+  Serial.println(to_display);
   
   a1_4.clear();
   a5_8.clear();
@@ -60,6 +35,6 @@ void  Display::clear(){
   a5_8.clear();
   a1_4.writeDisplay();
   a5_8.writeDisplay();
- //Serial.println("--------");
+ Serial.println("--------");
 }
 

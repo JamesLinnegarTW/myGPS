@@ -1,5 +1,5 @@
 #include "Arduino.h"
-#include "GridReference.h"
+#include "GridReferenceCalculator.h"
 #include "os_coord.h"
 #include "os_coord_math.h"
 #include "os_coord_data.h"
@@ -7,13 +7,14 @@
 #include "os_coord_ordinance_survey.h"
 
 
-GridReference::GridReference(void){
+GridReferenceCalculator::GridReferenceCalculator(void){
   
 }
 
 
-String GridReference::calculate( float latitude, float longitude){
-    
+void GridReferenceCalculator::calculate( float latitude, float longitude){
+   if(!latitude && !longitude) return "LOCATING";
+   
    float gps_ellipsoidal_height = 1.0;
    
    os_lat_lon_t   home_ll_wgs84 = { .lat=DEG_2_RAD(latitude)
@@ -27,26 +28,48 @@ String GridReference::calculate( float latitude, float longitude){
   os_eas_nor_t home_en_airy30 = os_lat_lon_to_tm_eas_nor(home_ll_airy30, OS_TM_NATIONAL_GRID);
   os_grid_ref_t home_grid_ref = os_eas_nor_to_grid_ref(home_en_airy30, OS_GR_NATIONAL_GRID);
 
-  return format(home_grid_ref);
+  
+  currentGridReference = home_grid_ref;
+ 
 }
 
+void GridReferenceCalculator::getCurrentGridReference(char * input){
 
-String GridReference::getCurrentGridReference(){
-   return format(currentGridReference);
+  char code[] = "SK";
+  char buffer[10];
+ 
+  strncpy(input, currentGridReference.code, 2);
+
+  dtostrf(currentGridReference.e, 5, 0, buffer);
+
+  for(byte i = 0; i  < 3; i++){
+    if(buffer[i] == ' '){
+      input[i+2]='0';
+    } else {
+      input[i+2] = buffer[i];
+    }
+  }
+
+  dtostrf(currentGridReference.n, 5, 0, buffer);
+
+  for(byte i = 0; i  < 3; i++){
+    if(buffer[i] == ' '){
+      input[i+5]='0';
+    } else {
+      input[i+5] = buffer[i];
+    }
+  }
+  
+  input[9] ='\0';
+    
+  //Serial.println(inp);
+
+  return;  
 }
-
 /*
-void GridReference::toCharArray(double value, char * output){
-  char buffer[50];
-  char *p;
-  
-  dtostrf(value,7, 2, buffer);
-  p = strtok(buffer,".");
-  
-  Serial.println(buffer);
-}
-*/
-String  GridReference::formatNumber( float number , byte chars) {
+
+String  GridReferenceCalculator::formatNumber( float number , byte chars) {
+  Serial.println(number);
   String input = String(number);
 
   String output = input.substring(0, input.lastIndexOf(".")); 
@@ -57,10 +80,10 @@ String  GridReference::formatNumber( float number , byte chars) {
   return output.substring(0,3);
 }
 
-String  GridReference::format( os_grid_ref grid_ref){
+String  GridReferenceCalculator::format( os_grid_ref grid_ref){
   String output = grid_ref.code;
   output += formatNumber(grid_ref.e, 5);
   output += formatNumber(grid_ref.n, 5);
   return output;
 }
-
+*/
