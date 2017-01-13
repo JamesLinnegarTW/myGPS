@@ -98,8 +98,7 @@ void loop() {
   if((now - timeAtLastRefresh) > REFRESH_INTERVAL || displayButton.isPressed()){
    
     if(render || alwaysOn){ // only render the screen every n milliseconds
-      renderLocation();
-      /*
+
       switch (toDisplay) {
         case 0:
           renderLocation();
@@ -110,7 +109,6 @@ void loop() {
         default:
            renderLocation();
       } 
-      */
 
     } else {
       screen.clear();
@@ -132,13 +130,12 @@ void renderLocation(){
   calculator.getCurrentGridReference(toDisplay);
   screen.renderCharArray(toDisplay);
 }
-/*
+
 void renderAlt(){
-  char toDisplay[8] = "ALT 1234";
+  char toDisplay[8];
+  sprintf("ALT %4d", toDisplay, (int) gps.altitude);
   screen.renderCharArray(toDisplay);
-  //screen.renderString("ALT " + String((int) gps.altitude));
 }
-*/
 
 
 
