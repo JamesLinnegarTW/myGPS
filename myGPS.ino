@@ -25,10 +25,6 @@ const long  AUTO_RENDER_INTERVAL = 100000;
 const int   DISPLAY_BUTTON_HOLD_TIME = 1000;
 const unsigned int CALCULATE_INTERVAL = 5000;
 
-
-const double MOCK_LAT = 60.640876;
-const double MOCK_LON = -1.0986328;
-
 SoftwareSerial gpsSerial(11, 10);
 Adafruit_GPS   gps(&gpsSerial);
 
@@ -74,7 +70,7 @@ void loop() {
    // alwaysOn = !alwaysOn;
 
     toDisplay++;
-    if(toDisplay > 1){
+    if(toDisplay > 5){
       toDisplay = 0;
     }
     
@@ -106,6 +102,18 @@ void loop() {
         case 1:
           renderAlt();
           break;
+        case 2:
+          renderSpeed();
+          break;
+        case 3:
+          renderSatellites();
+          break;
+        case 4:
+          renderAngle();
+          break;
+        case 5:
+          renderTime();
+          break;
         default:
            renderLocation();
       } 
@@ -126,16 +134,48 @@ void loop() {
 }
 
 void renderLocation(){
-  char toDisplay[9];
+  char toDisplay[9] = "        ";
   calculator.getCurrentGridReference(toDisplay);
   screen.renderCharArray(toDisplay);
 }
 
 void renderAlt(){
-  char toDisplay[8];
-  sprintf("ALT %4d", toDisplay, (int) gps.altitude);
+  char toDisplay[9] = "        ";
+  sprintf(toDisplay, "ALT %04d", (int) gps.altitude);
   screen.renderCharArray(toDisplay);
 }
 
+void renderSatellites(){
+  char toDisplay[9] = "        ";
+  sprintf(toDisplay, "SAT %d", (int) gps.satellites);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderSpeed(){
+  char toDisplay[9] = "        ";
+
+  sprintf(toDisplay, "SPD %dkts", (int) gps.speed);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderAngle(){
+  char toDisplay[9] = "        ";
+  sprintf(toDisplay, "AGL %d", (int) gps.angle);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderTime(){
+  char toDisplay[9] = "        ";
+  sprintf(toDisplay, "%02d:%02d", (int) gps.hour, (int) gps.minute);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderEasting(){
+
+}
+
+void renderNorthing() {
+
+}
 
 

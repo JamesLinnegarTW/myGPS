@@ -59,8 +59,12 @@ void GridReferenceCalculator::getCurrentGridReference(char * input){
       input[i+5] = buffer[i];
     }
   }
+
+  input[8] = NULL;
+
+  Serial.println(input);
   
-  input[9] ='\0';
+
     
   //Serial.println(inp);
 
