@@ -24,6 +24,7 @@ const int   REFRESH_INTERVAL = 2000;
 const long  AUTO_RENDER_INTERVAL = 100000;
 const int   DISPLAY_BUTTON_HOLD_TIME = 1000;
 const unsigned int CALCULATE_INTERVAL = 5000;
+const char STARTUP_TEXT = "  MYGPS ";
 
 SoftwareSerial gpsSerial(11, 10);
 Adafruit_GPS   gps(&gpsSerial);
@@ -34,7 +35,7 @@ unsigned long timeAtLastCalculation;
 
 byte toDisplay = 0;
 boolean render = false;
-boolean alwaysOn = false;
+
 
 Display screen = Display();
 Button displayButton = Button();
@@ -50,7 +51,7 @@ void setup() {
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
 
-  screen.renderCharArray(" MYGPS  ");
+  screen.renderCharArray(STARTUP_TEXT);
   timeAtLastRender = millis();
   delay(2000);
   screen.clear();
@@ -67,13 +68,10 @@ void loop() {
   }
   
   if(displayButton.isHeld()) { 
-   // alwaysOn = !alwaysOn;
-
     toDisplay++;
-    if(toDisplay > 5){
+    if(toDisplay > 8){
       toDisplay = 0;
-    }
-    
+    } 
   }
   
   if(gps.fix && (now  - timeAtLastCalculation > CALCULATE_INTERVAL)){
@@ -93,7 +91,7 @@ void loop() {
     
   if((now - timeAtLastRefresh) > REFRESH_INTERVAL || displayButton.isPressed()){
    
-    if(render || alwaysOn){ // only render the screen every n milliseconds
+    if(render){ // only render the screen every n milliseconds
 
       switch (toDisplay) {
         case 0:
@@ -113,6 +111,15 @@ void loop() {
           break;
         case 5:
           renderTime();
+          break;
+        case 6:
+          renderEasting();
+          break;
+        case 7:
+          renderNorthing();
+          break;
+        case 8:
+          renderDate();
           break;
         default:
            renderLocation();
@@ -147,35 +154,44 @@ void renderAlt(){
 
 void renderSatellites(){
   char toDisplay[9] = "        ";
-  sprintf(toDisplay, "SAT %d", (int) gps.satellites);
+  sprintf(toDisplay, "SAT %4d", (int) gps.satellites);
   screen.renderCharArray(toDisplay);
 }
 
 void renderSpeed(){
   char toDisplay[9] = "        ";
 
-  sprintf(toDisplay, "SPD %dkts", (int) gps.speed);
+  sprintf(toDisplay, "SPD %4d", (int) gps.speed);
   screen.renderCharArray(toDisplay);
 }
 
 void renderAngle(){
   char toDisplay[9] = "        ";
-  sprintf(toDisplay, "AGL %d", (int) gps.angle);
+  sprintf(toDisplay, "AGL %4d", (int) gps.angle);
   screen.renderCharArray(toDisplay);
 }
 
 void renderTime(){
-  char toDisplay[9] = "        ";
+  char toDisplay[9];
   sprintf(toDisplay, "%02d:%02d", (int) gps.hour, (int) gps.minute);
   screen.renderCharArray(toDisplay);
 }
 
+void renderDate(){
+  char toDisplay;
+  sprintf(toDisplay, "%02d/%02d/%02d", (int) gps.day, (int) gps.month, (int) gps.year);
+  screen.renderCharArray(toDisplay);
+}
 void renderEasting(){
-
+  char toDisplay[9];
+  calculator.getCurrentEasting(toDisplay);
+  screen.renderCharArray(toDisplay);
 }
 
 void renderNorthing() {
-
+  char toDisplay[9];
+  calculator.getCurrentNorthing(toDisplay);
+  screen.renderCharArray(toDisplay);
 }
 
 

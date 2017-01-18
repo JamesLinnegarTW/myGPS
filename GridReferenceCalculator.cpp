@@ -26,21 +26,24 @@ void GridReferenceCalculator::calculate( float latitude, float longitude){
   os_cartesian_t home_c_airy30 = os_helmert_transform(home_c_wgs84, OS_HE_WGS84_TO_OSGB36);
   os_lat_lon_t home_ll_airy30 = os_cartesian_to_lat_lon(home_c_airy30, OS_EL_AIRY_1830);
   os_eas_nor_t home_en_airy30 = os_lat_lon_to_tm_eas_nor(home_ll_airy30, OS_TM_NATIONAL_GRID);
-  os_grid_ref_t home_grid_ref = os_eas_nor_to_grid_ref(home_en_airy30, OS_GR_NATIONAL_GRID);
 
-  
-  currentGridReference = home_grid_ref;
- 
+  currentEastingNorthing = home_en_airy30;
+   
 }
 
 void GridReferenceCalculator::getCurrentGridReference(char * input){
 
-  char code[] = "SK";
+  char code[2];
   char buffer[10];
- 
-  strncpy(input, currentGridReference.code, 2);
 
-  dtostrf(currentGridReference.e, 5, 0, buffer);
+  os_grid_ref_t home_grid_ref = os_eas_nor_to_grid_ref(currentEastingNorthing, OS_GR_NATIONAL_GRID);  
+
+  strncpy(input, NO_LOCATION, 8);
+  return;
+  
+  strncpy(input, home_grid_ref.code, 2);
+
+  dtostrf(home_grid_ref.e, 5, 0, buffer);
 
   for(byte i = 0; i  < 3; i++){
     if(buffer[i] == ' '){
@@ -50,7 +53,7 @@ void GridReferenceCalculator::getCurrentGridReference(char * input){
     }
   }
 
-  dtostrf(currentGridReference.n, 5, 0, buffer);
+  dtostrf(home_grid_ref.n, 5, 0, buffer);
 
   for(byte i = 0; i  < 3; i++){
     if(buffer[i] == ' '){
@@ -61,33 +64,24 @@ void GridReferenceCalculator::getCurrentGridReference(char * input){
   }
 
   input[8] = NULL;
-
-  Serial.println(input);
-  
-
-    
-  //Serial.println(inp);
-
-  return;  
-}
-/*
-
-String  GridReferenceCalculator::formatNumber( float number , byte chars) {
-  Serial.println(number);
-  String input = String(number);
-
-  String output = input.substring(0, input.lastIndexOf(".")); 
-
-  for(byte len = output.length(); len < chars; len++){
-    output = "0" + output;
-  } 
-  return output.substring(0,3);
 }
 
-String  GridReferenceCalculator::format( os_grid_ref grid_ref){
-  String output = grid_ref.code;
-  output += formatNumber(grid_ref.e, 5);
-  output += formatNumber(grid_ref.n, 5);
-  return output;
+void GridReferenceCalculator::getCurrentEasting(char *input) {
+  char buffer[10];
+  dtostrf(currentEastingNorthing.e, 6, 0, buffer);
+  input[0] = 'E';
+  input[1] = ' ';
+  for(byte i = 2; i < 8; i++){
+    input[i] = buffer[i-2];
+  }
 }
-*/
+
+void GridReferenceCalculator::getCurrentNorthing(char *input) {
+  char buffer[10];
+  dtostrf(currentEastingNorthing.n, 6, 0, buffer);
+  input[0] = 'N';
+  input[1] = ' ';
+  for(byte i = 2; i < 8; i++){
+    input[i] = buffer[i-2];
+  }
+}

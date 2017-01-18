@@ -13,12 +13,11 @@ class GridReferenceCalculator {
   GridReferenceCalculator(void);
   void calculate(float latitude, float longitude);
   void getCurrentGridReference(char * input);
+  void getCurrentEasting(char * input);
+  void getCurrentNorthing(char * input);
 
  private:
-   //String formatNumber(float number , byte chars);
-   //String format( os_grid_ref grid_ref );
-   os_grid_ref currentGridReference;
-  
-   
+   os_eas_nor_t currentEastingNorthing;
+   const char NO_LOCATION = "LOCATING";
 };
 #endif
