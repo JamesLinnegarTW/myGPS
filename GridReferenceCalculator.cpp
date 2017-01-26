@@ -13,7 +13,6 @@ GridReferenceCalculator::GridReferenceCalculator(void){
 
 
 void GridReferenceCalculator::calculate( float latitude, float longitude){
-   if(!latitude && !longitude) return "LOCATING";
    
    float gps_ellipsoidal_height = 1.0;
    
@@ -37,9 +36,6 @@ void GridReferenceCalculator::getCurrentGridReference(char * input){
   char buffer[10];
 
   os_grid_ref_t home_grid_ref = os_eas_nor_to_grid_ref(currentEastingNorthing, OS_GR_NATIONAL_GRID);  
-
-  strncpy(input, NO_LOCATION, 8);
-  return;
   
   strncpy(input, home_grid_ref.code, 2);
 

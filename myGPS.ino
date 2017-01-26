@@ -13,7 +13,7 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 
-#include <Adafruit_GPS.h>
+#include "GPS.h"
 #include "Display.h"
 #include "Button.h"
 #include "GridReferenceCalculator.h"
@@ -24,10 +24,9 @@ const int   REFRESH_INTERVAL = 2000;
 const long  AUTO_RENDER_INTERVAL = 100000;
 const int   DISPLAY_BUTTON_HOLD_TIME = 1000;
 const unsigned int CALCULATE_INTERVAL = 5000;
-const char STARTUP_TEXT = "  MYGPS ";
 
 SoftwareSerial gpsSerial(11, 10);
-Adafruit_GPS   gps(&gpsSerial);
+GPS   gps(&gpsSerial);
 
 unsigned long timeAtLastRender;
 unsigned long timeAtLastRefresh;
@@ -35,7 +34,6 @@ unsigned long timeAtLastCalculation;
 
 byte toDisplay = 0;
 boolean render = false;
-
 
 Display screen = Display();
 Button displayButton = Button();
@@ -51,7 +49,7 @@ void setup() {
   gps.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
 
-  screen.renderCharArray(STARTUP_TEXT);
+  screen.renderCharArray("  MYGPS ");
   timeAtLastRender = millis();
   delay(2000);
   screen.clear();
@@ -69,7 +67,7 @@ void loop() {
   
   if(displayButton.isHeld()) { 
     toDisplay++;
-    if(toDisplay > 8){
+    if(toDisplay > 7){
       toDisplay = 0;
     } 
   }
@@ -141,39 +139,39 @@ void loop() {
 }
 
 void renderLocation(){
-  char toDisplay[9] = "        ";
+  char toDisplay[9];
   calculator.getCurrentGridReference(toDisplay);
   screen.renderCharArray(toDisplay);
 }
 
 void renderAlt(){
-  char toDisplay[9] = "        ";
-  sprintf(toDisplay, "ALT %04d", (int) gps.altitude);
+  char toDisplay[9];
+  sprintf(toDisplay, "ALT %4d", (int) gps.altitude);
   screen.renderCharArray(toDisplay);
 }
 
 void renderSatellites(){
-  char toDisplay[9] = "        ";
+  char toDisplay[9];
   sprintf(toDisplay, "SAT %4d", (int) gps.satellites);
   screen.renderCharArray(toDisplay);
 }
 
 void renderSpeed(){
-  char toDisplay[9] = "        ";
+  char toDisplay[9]= "        ";
 
   sprintf(toDisplay, "SPD %4d", (int) gps.speed);
   screen.renderCharArray(toDisplay);
 }
 
 void renderAngle(){
-  char toDisplay[9] = "        ";
+  char toDisplay[9];
   sprintf(toDisplay, "AGL %4d", (int) gps.angle);
   screen.renderCharArray(toDisplay);
 }
 
 void renderTime(){
   char toDisplay[9];
-  sprintf(toDisplay, "%02d:%02d", (int) gps.hour, (int) gps.minute);
+  sprintf(toDisplay, "TME %02d%02d", (int) gps.hour, (int) gps.minute);
   screen.renderCharArray(toDisplay);
 }
 

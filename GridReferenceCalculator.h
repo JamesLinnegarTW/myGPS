@@ -18,6 +18,5 @@ class GridReferenceCalculator {
 
  private:
    os_eas_nor_t currentEastingNorthing;
-   const char NO_LOCATION = "LOCATING";
 };
 #endif
