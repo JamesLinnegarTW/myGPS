@@ -40,6 +40,64 @@ Button displayButton = Button();
 
 GridReferenceCalculator calculator = GridReferenceCalculator();
 
+
+void renderLocation(){
+  char toDisplay[9] = "LOCATING";
+  if(gps.fix){
+    calculator.getCurrentGridReference(toDisplay);
+  }
+  screen.renderCharArray(toDisplay);
+}
+
+void renderAlt(){
+  char toDisplay[9];
+  sprintf(toDisplay, "ALT %4d", (int) gps.altitude);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderSatellites(){
+  char toDisplay[9];
+  sprintf(toDisplay, "SAT %4d", (int) gps.satellites);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderSpeed(){
+  char toDisplay[9];
+
+  sprintf(toDisplay, "SPD %4d", (int) gps.speed);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderAngle(){
+  char toDisplay[9];
+  sprintf(toDisplay, "AGL %4d", (int) gps.angle);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderTime(){
+  char toDisplay[9];
+  sprintf(toDisplay, "TME %02d%02d", (int) gps.hour, (int) gps.minute);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderDate(){
+  char toDisplay;
+  sprintf(toDisplay, "%02d/%02d/%02d", (int) gps.day, (int) gps.month, (int) gps.year);
+  screen.renderCharArray(toDisplay);
+}
+void renderEasting(){
+  char toDisplay[9];
+  calculator.getCurrentEasting(toDisplay);
+  screen.renderCharArray(toDisplay);
+}
+
+void renderNorthing() {
+  char toDisplay[9];
+  calculator.getCurrentNorthing(toDisplay);
+  screen.renderCharArray(toDisplay);
+}
+
+
 void setup() {
   screen.init();
   displayButton.init(DISPLAY_BUTTON_PIN, DISPLAY_BUTTON_HOLD_TIME);
@@ -136,61 +194,3 @@ void loop() {
     gps.parse(gps.lastNMEA()); 
   }
 }
-
-void renderLocation(){
-  char toDisplay[9] = "LOCATING";
-  if(gps.fix){
-    calculator.getCurrentGridReference(toDisplay);
-  }
-  screen.renderCharArray(toDisplay);
-}
-
-void renderAlt(){
-  char toDisplay[9];
-  sprintf(toDisplay, "ALT %4d", (int) gps.altitude);
-  screen.renderCharArray(toDisplay);
-}
-
-void renderSatellites(){
-  char toDisplay[9];
-  sprintf(toDisplay, "SAT %4d", (int) gps.satellites);
-  screen.renderCharArray(toDisplay);
-}
-
-void renderSpeed(){
-  char toDisplay[9];
-
-  sprintf(toDisplay, "SPD %4d", (int) gps.speed);
-  screen.renderCharArray(toDisplay);
-}
-
-void renderAngle(){
-  char toDisplay[9];
-  sprintf(toDisplay, "AGL %4d", (int) gps.angle);
-  screen.renderCharArray(toDisplay);
-}
-
-void renderTime(){
-  char toDisplay[9];
-  sprintf(toDisplay, "TME %02d%02d", (int) gps.hour, (int) gps.minute);
-  screen.renderCharArray(toDisplay);
-}
-
-void renderDate(){
-  char toDisplay;
-  sprintf(toDisplay, "%02d/%02d/%02d", (int) gps.day, (int) gps.month, (int) gps.year);
-  screen.renderCharArray(toDisplay);
-}
-void renderEasting(){
-  char toDisplay[9];
-  calculator.getCurrentEasting(toDisplay);
-  screen.renderCharArray(toDisplay);
-}
-
-void renderNorthing() {
-  char toDisplay[9];
-  calculator.getCurrentNorthing(toDisplay);
-  screen.renderCharArray(toDisplay);
-}
-
-
