@@ -2,11 +2,11 @@
  * Wiring Pins
  * 
  * Display
- *  SCL Analog B0
- *  SDA Digital B1
+ *  SCL 3
+ *  SDA 2
  *   
  * GPS Software serial
- *  11, 10 TX, RX
+ *  9, 8 TX, RX
  *  
  */
  
@@ -18,14 +18,14 @@
 #include "Button.h"
 #include "GridReferenceCalculator.h"
 
-const byte  DISPLAY_BUTTON_PIN = 2;
+const byte  DISPLAY_BUTTON_PIN = 6;
 const long  DISPLAY_TIME = 10000;
 const int   REFRESH_INTERVAL = 2000;
-const long  AUTO_RENDER_INTERVAL = 100000;
+const long  AUTO_RENDER_INTERVAL = 20000;
 const int   DISPLAY_BUTTON_HOLD_TIME = 1000;
 const unsigned int CALCULATE_INTERVAL = 5000;
 
-SoftwareSerial gpsSerial(11, 10);
+SoftwareSerial gpsSerial(9, 8);
 GPS   gps(&gpsSerial);
 
 unsigned long timeAtLastRender;
@@ -41,7 +41,6 @@ Button displayButton = Button();
 GridReferenceCalculator calculator = GridReferenceCalculator();
 
 void setup() {
-  Serial.begin(9600);
   screen.init();
   displayButton.init(DISPLAY_BUTTON_PIN, DISPLAY_BUTTON_HOLD_TIME);
   
@@ -58,7 +57,7 @@ void setup() {
 void loop() {
   unsigned long now = millis();
   
-  displayButton.tick();
+  displayButton.sample();
   
   if(displayButton.isPressed()){
     render = true;
@@ -139,8 +138,10 @@ void loop() {
 }
 
 void renderLocation(){
-  char toDisplay[9];
-  calculator.getCurrentGridReference(toDisplay);
+  char toDisplay[9] = "LOCATING";
+  if(gps.fix){
+    calculator.getCurrentGridReference(toDisplay);
+  }
   screen.renderCharArray(toDisplay);
 }
 
@@ -157,7 +158,7 @@ void renderSatellites(){
 }
 
 void renderSpeed(){
-  char toDisplay[9]= "        ";
+  char toDisplay[9];
 
   sprintf(toDisplay, "SPD %4d", (int) gps.speed);
   screen.renderCharArray(toDisplay);

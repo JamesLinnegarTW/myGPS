@@ -7,45 +7,46 @@ void Button::init(byte setup_pin, unsigned int _hold_delay){
   pin = setup_pin; 
   debounce_delay = 50;     
   hold_delay = _hold_delay;
-
-  is_pressed = false;
-  is_held = false;
   
   pinMode(setup_pin, INPUT);
 
 }
 
-void Button::tick(){
-  int reading = digitalRead(pin);
-  is_held = false;
-  if (reading != last_button_state) {
+void Button::sample(){
+  boolean reading = digitalRead(pin);
+  bitWrite(state, 1, 0); //is_held = false;
+  if (reading != lastButtonState()) {
     last_debounce_time = millis();
   }
   
   if ((millis() - last_debounce_time) > debounce_delay) { //check for a debounce
-    is_pressed = reading; // high or low
-    if(is_pressed && last_pressed_time == NULL) {
+    bitWrite(state, 0, reading); // high or low
+    if(isPressed() && last_pressed_time == NULL) {
       last_pressed_time = millis();
-    } else if(!is_pressed) {
+    } else if(!isPressed()) {
       last_pressed_time = NULL;
-      is_held = false;
+      bitWrite(state, 1, 0); //is_held = false;
     }
 
   }
 
-  if(is_pressed && ((millis() - last_pressed_time) > hold_delay)) {
+  if(isPressed() && ((millis() - last_pressed_time) > hold_delay)) {
       last_pressed_time = millis();
-      is_held = true;
+      bitWrite(state, 1, true ); //is_held = true;
   }
 
-  last_button_state = reading;
+  bitWrite(state, 2, reading);
 }
 
 boolean Button::isPressed(){
-  return is_pressed;
+  return bitRead(state, 0);
 }
 
 boolean Button::isHeld() {
-  return is_held;
+  return bitRead(state, 1);
+}
+
+boolean Button::lastButtonState(){
+  return bitRead(state, 2);
 }
 

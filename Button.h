@@ -7,22 +7,20 @@ class Button {
  public:
   Button(void);
   void init(byte setup_pin, unsigned int _hold_delay);
-  void tick();
+  void sample();
   boolean isPressed();
   boolean isHeld();
 
  private:
-   int pin;
-
-   boolean is_pressed;
-   boolean is_held;
-   
+   byte pin;
+   byte state;  
    byte debounce_delay;    // the debounce time; increase if the output flickers
    unsigned int hold_delay;
-   byte last_button_state;
+
    
    unsigned long last_debounce_time;  // the last time the output pin was toggled
    unsigned long last_pressed_time;
+   boolean lastButtonState();
    
 };
 #endif

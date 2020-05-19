@@ -15,8 +15,7 @@ void Display::init(){
 }
 
 void Display::renderCharArray(char * to_display) {
-  Serial.println(to_display);
-  
+
   a1_4.clear();
   a5_8.clear();
   
@@ -35,6 +34,5 @@ void  Display::clear(){
   a5_8.clear();
   a1_4.writeDisplay();
   a5_8.writeDisplay();
- Serial.println("--------");
 }
 
